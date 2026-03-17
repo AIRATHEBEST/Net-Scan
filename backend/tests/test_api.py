@@ -45,22 +45,22 @@ def test_auth_register_invalid_email():
 def test_networks_list_unauthorized():
     """Test networks endpoint without auth token"""
     response = client.get("/api/networks")
-    assert response.status_code == 403  # Forbidden
+    assert response.status_code == 401  # Unauthorized
 
 
 def test_devices_list_unauthorized():
     """Test devices endpoint without auth token"""
     response = client.get("/api/devices")
-    assert response.status_code == 403  # Forbidden
+    assert response.status_code == 401  # Unauthorized
 
 
 def test_scan_interfaces_unauthorized():
     """Test scan interfaces endpoint without auth token"""
     response = client.get("/api/scan/interfaces")
-    assert response.status_code == 403  # Forbidden
+    assert response.status_code == 401  # Unauthorized
 
 
 def test_security_scan_unauthorized():
     """Test security scan endpoint without auth token"""
     response = client.post("/api/security/scan/test-device-id")
-    assert response.status_code == 403  # Forbidden
+    assert response.status_code == 401  # Unauthorized

@@ -12,7 +12,9 @@ def test_user_model_creation():
     user = User(
         email="test@example.com",
         hashed_password="hashed_password",
-        full_name="Test User"
+        full_name="Test User",
+        is_active=True,
+        is_superuser=False
     )
     assert user.email == "test@example.com"
     assert user.full_name == "Test User"

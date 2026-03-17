@@ -7,7 +7,11 @@ logger = logging.getLogger(__name__)
 
 class PortScanner:
     def __init__(self):
-        self.nm = nmap.PortScanner()
+        try:
+            self.nm = nmap.PortScanner()
+        except Exception as e:
+            logger.warning(f"Nmap not found: {e}. Port scanning will be disabled.")
+            self.nm = None
         
     async def scan_ports(
         self, 
@@ -19,6 +23,10 @@ class PortScanner:
         Scan ports on a device using nmap
         Returns open ports, services, and OS detection
         """
+        if not self.nm:
+            logger.error("Nmap not initialized, skipping scan")
+            return {'open_ports': [], 'services': {}, 'os': None}
+
         logger.info(f"Scanning ports on {ip}")
         
         try:
@@ -87,6 +95,10 @@ class PortScanner:
         Run vulnerability detection scripts
         Uses nmap NSE scripts for common vulnerabilities
         """
+        if not self.nm:
+            logger.error("Nmap not initialized, skipping vulnerability scan")
+            return []
+
         logger.info(f"Running vulnerability scan on {ip}")
         
         vulnerabilities = []

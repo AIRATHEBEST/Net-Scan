@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import List, Dict
+from typing import List, Dict, Optional
 import httpx
 from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
