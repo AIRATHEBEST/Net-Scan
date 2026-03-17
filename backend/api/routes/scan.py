@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from backend.core.database import get_db
 from backend.services.scan_service import ScanService
 from backend.api.routes.auth import get_current_user
 from backend.models.user import User
+from backend.models.network import Network, ScanHistory
 import uuid
 
 router = APIRouter()
@@ -43,5 +45,37 @@ async def get_scan_history(
     current_user: User = Depends(get_current_user)
 ):
     """Get scan history for a network"""
-    # TODO: Implement scan history retrieval
-    return {"history": []}
+    # Verify user owns this network
+    result = await db.execute(
+        select(Network).where(
+            Network.id == network_id,
+            Network.user_id == current_user.id
+        )
+    )
+    network = result.scalar_one_or_none()
+    
+    if not network:
+        raise HTTPException(status_code=404, detail="Network not found")
+    
+    # Get scan history
+    result = await db.execute(
+        select(ScanHistory)
+        .where(ScanHistory.network_id == network_id)
+        .order_by(ScanHistory.started_at.desc())
+        .limit(50)
+    )
+    scans = result.scalars().all()
+    
+    return {
+        "history": [
+            {
+                "id": str(scan.id),
+                "started_at": scan.started_at.isoformat(),
+                "completed_at": scan.completed_at.isoformat() if scan.completed_at else None,
+                "devices_found": scan.devices_found,
+                "new_devices": scan.new_devices,
+                "status": scan.status
+            }
+            for scan in scans
+        ]
+    }

@@ -147,7 +147,7 @@ const DeviceList: React.FC<DeviceListProps> = ({ devices }) => {
         })}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .device-list-container {
           margin-top: 24px;
         }

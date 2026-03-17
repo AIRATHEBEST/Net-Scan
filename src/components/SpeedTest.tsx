@@ -155,7 +155,7 @@ const SpeedTest: React.FC = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .speed-test {
           max-width: 900px;
           margin: 0 auto;

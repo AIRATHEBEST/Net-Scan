@@ -53,7 +53,7 @@ const NetworkScanner: React.FC<NetworkScannerProps> = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .scanner-container {
           background: #262626;
           border: 1px solid #2F2F2F;

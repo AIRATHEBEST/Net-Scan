@@ -95,6 +95,7 @@ class ScanService:
             # Send notifications for new devices
             if new_devices > 0:
                 await self.notification_service.send_new_device_alert(
+                    db,
                     user_id,
                     new_devices
                 )

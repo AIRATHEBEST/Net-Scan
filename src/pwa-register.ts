@@ -50,8 +50,8 @@ function showUpdateNotification() {
       body: 'A new version is available. Refresh to update.',
       icon: '/icon-192.png',
       badge: '/icon-96.png',
-      vibrate: [200, 100, 200]
-    });
+      tag: 'netscan-update'
+    } as NotificationOptions);
   }
 }
 

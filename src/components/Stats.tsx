@@ -1,5 +1,4 @@
-import React from 'react';
-import { Wifi, Shield, AlertTriangle, Plus } from 'lucide-react';
+import { Wifi, Shield, Plus } from 'lucide-react';
 import { Device } from '../types';
 
 interface StatsProps {
@@ -38,7 +37,7 @@ const Stats: React.FC<StatsProps> = ({ devices }) => {
         );
       })}
 
-      <style jsx>{`
+      <style>{`
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));

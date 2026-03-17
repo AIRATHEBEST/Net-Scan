@@ -3,7 +3,10 @@ import logging
 from typing import Optional
 import firebase_admin
 from firebase_admin import credentials, messaging
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from backend.core.config import settings
+from backend.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -53,21 +56,54 @@ class NotificationService:
             logger.error(f"Error sending push notification: {e}")
             return False
     
-    async def send_new_device_alert(self, user_id: str, device_count: int):
+    async def send_new_device_alert(self, db: AsyncSession, user_id: str, device_count: int):
         """Send alert for new devices detected"""
-        # TODO: Get user's FCM token from database
-        # TODO: Send push notification
-        logger.info(f"New device alert for user {user_id}: {device_count} devices")
+        try:
+            # Get user's FCM token from database
+            result = await db.execute(
+                select(User).where(User.id == user_id)
+            )
+            user = result.scalar_one_or_none()
+            
+            if user and user.fcm_token and user.push_notifications:
+                await self.send_push_notification(
+                    user.fcm_token,
+                    "New Devices Detected",
+                    f"{device_count} new device(s) found on your network",
+                    {"type": "new_devices", "count": str(device_count)}
+                )
+            
+            logger.info(f"New device alert for user {user_id}: {device_count} devices")
+        except Exception as e:
+            logger.error(f"Error sending new device alert: {e}")
     
     async def send_security_alert(
         self,
+        db: AsyncSession,
         user_id: str,
         device_name: str,
         severity: str,
         description: str
     ):
         """Send security vulnerability alert"""
-        logger.info(f"Security alert for user {user_id}: {device_name} - {severity}")
+        try:
+            # Get user's FCM token from database
+            result = await db.execute(
+                select(User).where(User.id == user_id)
+            )
+            user = result.scalar_one_or_none()
+            
+            if user and user.fcm_token and user.push_notifications:
+                await self.send_push_notification(
+                    user.fcm_token,
+                    f"Security Alert - {severity.upper()}",
+                    f"{device_name}: {description}",
+                    {"type": "security_alert", "severity": severity}
+                )
+            
+            logger.info(f"Security alert for user {user_id}: {device_name} - {severity}")
+        except Exception as e:
+            logger.error(f"Error sending security alert: {e}")
     
     async def send_email_notification(
         self,
@@ -75,7 +111,16 @@ class NotificationService:
         subject: str,
         body: str
     ) -> bool:
-        """Send email notification"""
-        # TODO: Implement email sending using SMTP
-        logger.info(f"Email notification: {to_email} - {subject}")
-        return True
+        """Send email notification via SMTP"""
+        try:
+            if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
+                logger.warning("SMTP not configured, skipping email notification")
+                return False
+            
+            # TODO: Implement actual SMTP email sending
+            # For now, just log it
+            logger.info(f"Email notification: {to_email} - {subject}")
+            return True
+        except Exception as e:
+            logger.error(f"Error sending email notification: {e}")
+            return False

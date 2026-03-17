@@ -153,7 +153,7 @@ const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ devices }) => {
         </ul>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .security-dashboard {
           max-width: 1200px;
         }
