@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  netscan-agent:
+    image: yourusername/netscan-agent:latest
+    container_name: netscan-agent
+    environment:
+      NETSCAN_API_URL: ${NETSCAN_API_URL:-https://netscan-production.up.railway.app}
+      NETSCAN_AGENT_KEY: ${NETSCAN_AGENT_KEY}
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
