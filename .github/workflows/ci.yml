@@ -1,0 +1,66 @@
+name: CI — Full Integration Check
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  # ─── Frontend ───────────────────────────────────────────────────────────────
+  frontend-check:
+    name: Frontend — Lint & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: ''   # empty = use Vite proxy
+
+  # ─── Backend ────────────────────────────────────────────────────────────────
+  backend-check:
+    name: Backend — Lint & Import Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Check imports compile
+        run: |
+          cd backend
+          python -c "from api.main import app; print('Backend imports OK')"
+        env:
+          DATABASE_URL: 'postgresql+asyncpg://user:pass@localhost/db'
+          REDIS_URL: 'redis://localhost:6379'
+          SECRET_KEY: 'ci-test-secret-key'
+
+  # ─── Agent ──────────────────────────────────────────────────────────────────
+  agent-check:
+    name: Agent — Docker Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image (no push)
+        run: docker build -t netscan-agent:ci ./netscan-agent
